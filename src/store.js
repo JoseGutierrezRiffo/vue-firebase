@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import router from './router'
 var firebase = require("firebase/app");
 import db from './main'
+import { format } from 'url';
 
 Vue.use(Vuex)
 
@@ -12,7 +13,8 @@ export default new Vuex.Store({
     error: '',
     tareas: [],
     tarea: {nombre: '', id: ''},
-    carga: false
+    carga: false,
+    texto: ''
   },
   mutations: {
     setUsuario(state, payload){
@@ -40,6 +42,11 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    buscador({commit, state}, payload){
+      console.log(payload);
+      state.texto = payload.toLowerCase();
+    },
+
     crearUsuario({commit}, payload){
       firebase.auth().createUserWithEmailAndPassword(payload.email, payload.pass)
       .then(res => {
@@ -55,12 +62,14 @@ export default new Vuex.Store({
         .then(() => {
           router.push({ name: 'inicio' })
         })
-
-
+        .catch(err => {
+          // console.log(err)
+          commit('setError', err.code)
+        })
       })
       .catch(err => {
         // console.log(err.message);
-        commit('setError', err.message)
+        commit('setError', err.code)
       })
     },
 
@@ -137,6 +146,7 @@ export default new Vuex.Store({
     },
 
     agregarTarea({commit}, nombre) {
+      commit('cargarFirebase', true);
       const usuario = firebase.auth().currentUser
       db.collection(usuario.email).add({
         nombre: nombre
@@ -144,6 +154,7 @@ export default new Vuex.Store({
       .then(doc => {
         // console.log(doc.id);
         router.push({ name: 'inicio' })
+        commit('cargarFirebase', false);
       })
     },
 
@@ -165,6 +176,17 @@ export default new Vuex.Store({
       }else{
         return true
       }
+    },
+
+    arrayFiltrado(state){
+      let arregloFiltrado = []
+      for(let tarea of state.tareas){
+        let nombre = tarea.nombre.toLowerCase();
+        if(nombre.indexOf(state.texto) >= 0){
+          arregloFiltrado.push(tarea)
+        }
+      }
+      return arregloFiltrado;
     }
   }
 })

@@ -4,22 +4,26 @@
         <form @submit.prevent="crearUsuario({email: email, pass: pass1})" class="form-signin">
 
             <label for="" class="sr-only">Email Address</label>
-            <input type="email" class="form-control" v-model="email" placeholder="Email Address" required autofocus>
+            <input type="email" class="form-control" v-model="$v.email.$model" placeholder="Email Address" autofocus>
+            <small class="text-danger d-block" v-if="!$v.email.email">Email invalido</small>
 
             <label for="" class="sr-only">Password</label>
-            <input type="password" class="form-control" v-model="pass1" placeholder="Password" required>
-            
+            <input type="password" class="form-control" v-model="pass1" placeholder="Password" >
+            <small class="text-danger d-block" v-if="!$v.pass1.minLength">Minimo 6 carácteres</small>
+
             <label for="" class="sr-only">Password</label>
-            <input type="password" class="form-control" v-model="pass2" placeholder="Confirm Password" required>
-            
+            <input type="password" class="form-control" v-model="pass2" placeholder="Confirm Password">
+             <small class="text-danger d-block" v-if="!$v.pass2.sameAs">Contraseña no coincide</small>
+            <!--  -->
             <button class="btn btn-primary" type="submit" :disabled="!desactivar">Crear usuario</button>
         </form>
-        <p>{{error}}</p>
+        <p v-if="error === 'auth/email-already-in-use'">Email ya registrado</p>
     </div>
 </template>
 
 <script>
-import {mapActions, mapState} from 'vuex'
+import {mapActions, mapState} from 'vuex';
+import { required, minLength, email, sameAs } from "vuelidate/lib/validators";
 
 export default {
     name: 'Registro',
@@ -41,6 +45,11 @@ export default {
             return this.pass1 === this.pass2 && this.pass1 != ''
         }
     },
+    validations: {
+      email: { required, email },
+      pass1: { required, minLength:minLength(6)},
+      pass2: { sameAs: sameAs('pass1')}
+    }
 }
 </script>
 

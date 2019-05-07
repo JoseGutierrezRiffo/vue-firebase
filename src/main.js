@@ -3,6 +3,9 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
+import Vuelidate from 'vuelidate'
+Vue.use(Vuelidate)
+
 // Firebase App is always required and must be first
 var firebase = require("firebase/app");
 
